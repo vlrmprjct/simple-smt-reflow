@@ -21,6 +21,7 @@
 #include <ezButton.h>
 
 #define MAX_TEMP 140
+#define DELAY_TEMP 15
 
 #define PT1000 0
 #define RELAY  1
@@ -29,6 +30,7 @@
 
 #define LOOP_STATE_STOPPED 0
 #define LOOP_STATE_STARTED 1
+#define TEMP_REACHED 1
 
 Waveshare_LCD1602_RGB lcd(16, 2);
 
@@ -88,6 +90,7 @@ float offset = 0;
 float temp = 0;
 char buff[10];
 int loopState = LOOP_STATE_STOPPED;
+int tempReach = 0;
 
 void setup() {
     pinMode(BUZZER, OUTPUT);
@@ -153,7 +156,11 @@ void loop() {
     // PROCESS STARTED
     if (loopState == LOOP_STATE_STARTED) {
         lcd.setCursor(0, 1);
-        if (temp < MAX_TEMP) {
+        if (temp > MAX_TEMP && (temp < (MAX_TEMP + DELAY_TEMP))) {
+            digitalWrite(RELAY, HIGH);
+            lcd.send_string("RELAY ON STEADY");
+            lcd.write_char((unsigned char)3);
+        } else if (temp < MAX_TEMP) {
             digitalWrite(RELAY, HIGH);
             lcd.send_string("RELAY ON       ");
             lcd.write_char((unsigned char)3);
